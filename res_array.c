@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "pval.h"
 
-// TODO replace memory allocation if statement guards with assert statements.
 
 struct res_array {
     pval** buf;
@@ -14,12 +13,13 @@ struct res_array {
 
 res_array* res_array_new() {
     res_array* out = malloc(sizeof(res_array));
-    assert(out);
+    assert(out && "Assertion error in res_array_new: memory allocation failure");
 
     out->size = 0;
     out->capacity = 4;
     out->buf = malloc(out->capacity * sizeof(pval*));
-    assert(out->buf);
+
+    assert(out->buf && "Assertion error in res_array_new: partial memory allocation failure");
 
     return out;
 }
@@ -34,56 +34,46 @@ void res_array_delete(res_array* r) {
     free(r);
 }
 
-bool res_array_get(res_array* r, int idx, pval** rtn) {
-    assert(r && "Assertion error: cannot access NULL res_array");
+pval* res_array_get(res_array* r, int idx) {
+    assert(r && "Assertion error in res_array_get: cannot access NULL res_array");
 
-    if (rtn && 0 <= idx && idx < r->size) {
-        *rtn = r->buf[idx];
-        return true;
-    } else
-        return false;
+    assert(0 <= idx && idx < r->size && "Assertion error in res_array_get: index out of bounds");
+    return r->buf[idx];
 }
 
-bool res_array_set(res_array* r, int idx, pval* val) {
-    if (!r)
-        return false;
-    if (0 <= idx && idx < r->size) {
-        r->buf[idx] = val;
-        return true;
-    } else
-        return false;
+void res_array_set(res_array* r, int idx, pval* val) {
+    assert(r && "Assertion error in res_array_set: cannot access NULL res_array");
+
+    assert(0 <= idx && idx < r->size && "Assertion error in res_array_set: index out of bounds");
+    r->buf[idx] = val;
 }
 
-bool res_array_push(res_array* r, pval* elem) {
-    if (!r)
-        return false;
+void res_array_push(res_array* r, pval* elem) {
+    assert(r && "Assertion error in res_array_push: cannot access NULL res_array");
+
     if (r->size == r->capacity) {
         pval** new_buf = realloc(r->buf, 2 * r->capacity * sizeof(pval*));
-        if (!new_buf)
-            return false;
+        assert(new_buf && "Assertion error in res_array_push: memory reallocation failure");
+
         r->buf = new_buf;
         r->capacity *= 2;
     }
     r->buf[r->size] = elem;
     r->size += 1;
-    return true;
 }
 
-bool res_array_pop(res_array* r, pval** elem) {
-    if (!r || r->size == 0)
-        return false;
+pval* res_array_pop(res_array* r) {
+    assert(!r || r->size == 0 && "Assertion error in res_array_pop: res_array cannot be NULL or empty");
+
     int new_size = r->size - 1;
     if (r->capacity > 4 && r->capacity > (4 * new_size)) {
         pval** new_buf = realloc(r->buf, (r->capacity / 2) * sizeof(pval*));
-        if (!new_buf)
-            return false;
-        else {
-            r->buf = new_buf;
-            r->capacity /= 2;
-        }
+        assert(new_buf && "Assertion error in res_array_pop: memory reallocation failure");
+
+        r->buf = new_buf;
+        r->capacity /= 2;
     }
-    if (elem)
-        *elem = r->buf[new_size];
+
     r->size = new_size;
-    return true;
+    return r->buf[new_size];
 }

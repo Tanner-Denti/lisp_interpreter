@@ -5,8 +5,6 @@
 #include "psi_types.h"
 #include "res_array.h"
 
-// TODO: Add print messages to all assertions like this:
-//          "Assertion error in <function_name>: reason for the error"
 
 struct pval_function {
     FUNCTION_TYPE type;
@@ -51,13 +49,15 @@ void pval_delete(pval* val) {
                 res_array_delete(val->value.list);
                 break;
             case CELL:
-                // Leave in case CELL needs this later
+                pval_delete(val->value.pval);
                 break;
             case ERROR:
-                // Leave in case ERROR needs this later
+                pval_delete(val->value.error->cause);
+                free(val->value.error->message);
+                free(val->value.error);
                 break;
             case FUNCTION:
-                // Leave in case FUNCTION needs this later
+                free(val->value.function);
                 break;
             default:
                 break;
@@ -69,7 +69,7 @@ void pval_delete(pval* val) {
 
 pval* new_pval_number(int64_t n) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_number: memory allocation failure");
 
     out->type = NUMBER;
     out->value.number = n;
@@ -79,7 +79,7 @@ pval* new_pval_number(int64_t n) {
 
 pval* new_pval_boolean(bool b) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_boolean: memory allocation failure");
 
     out->type = BOOLEAN;
     out->value.boolean = b;
@@ -89,7 +89,7 @@ pval* new_pval_boolean(bool b) {
 
 pval* new_pval_string(char* s) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_string: memory allocation failure");
 
     out->type = STRING;
     out->value.string = s;
@@ -99,7 +99,7 @@ pval* new_pval_string(char* s) {
 
 pval* new_pval_symbol(char* s) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_symbol: memory allocation failure");
 
     out->type = SYMBOL;
     out->value.symbol = s;
@@ -109,7 +109,7 @@ pval* new_pval_symbol(char* s) {
 
 pval* new_pval_list(res_array* arr) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_list: memory allocation failure");
 
     out->type = LIST;
     out->value.list = arr;
@@ -119,7 +119,7 @@ pval* new_pval_list(res_array* arr) {
 
 pval* new_pval_cell(pval* pval_ptr) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_cell: memory allocation failure");
 
     out->type = CELL;
     out->value.cell = pval_ptr;
@@ -141,7 +141,7 @@ char* get_error_message(ERROR_TYPE err) {
     }
 
     char* res = malloc(sizeof(msg));
-    assert(res);
+    assert(out && "Assertion error in get_error_message: memory allocation failure");
 
     res = msg;
     return res;
@@ -149,12 +149,12 @@ char* get_error_message(ERROR_TYPE err) {
 
 pval* new_pval_error(pval* cause, ERROR_TYPE err) {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_error: memory allocation failure");
 
     out->type = ERROR;
 
     pval_error* pval_e = malloc(sizeof(pval_error));
-    assert(pval_e);
+    assert(pval_e && "Assertion error in new_pval_number: partial memory allocation failure");
 
     pval_e->type = err;
     pval_e->cause = cause;
@@ -166,7 +166,7 @@ pval* new_pval_error(pval* cause, ERROR_TYPE err) {
 // TODO!
 pval* new_pval_function() {
     pval* out = malloc(sizeof(pval));
-    assert(out);
+    assert(out && "Assertion error in new_pval_function: memory allocation failure");
 
     return out;
 }
