@@ -9,5 +9,6 @@ typedef struct pval_function pval_function;
 typedef struct pval_error pval_error;
 
 void pval_delete(pval* val);
+char* pval_to_string(pval* val);
 
 #endif

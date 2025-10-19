@@ -14,6 +14,17 @@ typedef enum {
 
 typedef enum { BUILTIN, LAMBDA } FUNCTION_TYPE;
 
-typedef enum { SAMPLE_FOR_NOW } ERROR_TYPE;
+typedef enum {
+    DIVISION_BY_ZERO,
+    INCOMPLETE_PARSE,
+    INVALID_TOKEN,
+    VALUE_ERROR,
+    TYPE_ERROR,
+    UNBOUND,
+    ARITY,
+    INAPPLICABLE_HEAD,
+    PROTECTED_SYMBOL,
+    ARGLIST,
+} ERROR_TYPE;
 
 #endif
