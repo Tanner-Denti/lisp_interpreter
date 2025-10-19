@@ -79,7 +79,7 @@ char* pval_to_string(pval* val) {
             res = new_res;
             break;
         case ERROR:
-            res = pval_to_string(val->value.error->cause);
+            res = allocate_string(val->value.error->message);
 
             len = sizeof(char) * (strlen(res) + 9);
             new_res = realloc(res, len);
@@ -127,7 +127,14 @@ void pval_delete(pval* val) {
             free(val->value.error);
             break;
         case FUNCTION:
+            // TODO: Edit this once the new function function is complete
             free(val->value.function);
+            break;
+        case STRING:
+            free(val->value.string);
+            break;
+        case SYMBOL:
+            free(val->value.symbol);
             break;
         default:
             break;
@@ -175,7 +182,7 @@ pval* new_pval_symbol(char* s) {
            "Assertion error in new_pval_symbol: memory allocation failure");
 
     out->type = SYMBOL;
-    out->value.symbol = s;
+    out->value.symbol = allocate_string(s);
 
     return out;
 }
@@ -274,6 +281,8 @@ pval* new_pval_error(pval* cause, ERROR_TYPE err) {
     pval_e->type = err;
     pval_e->cause = cause;
     pval_e->message = get_error_message(err, cause);
+
+    out->value.error = pval_e;
 
     return out;
 }

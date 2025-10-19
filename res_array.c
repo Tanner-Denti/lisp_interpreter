@@ -74,9 +74,9 @@ void res_array_push(res_array* r, pval* elem) {
 }
 
 pval* res_array_pop(res_array* r) {
-    assert(!r || r->size == 0 &&
-                     "Assertion error in res_array_pop: res_array cannot be "
-                     "NULL or empty");
+    assert(r || r->size == 0 &&
+                    "Assertion error in res_array_pop: res_array cannot be "
+                    "NULL or empty");
 
     int new_size = r->size - 1;
     if (r->capacity > 4 && r->capacity > (4 * new_size)) {
@@ -117,14 +117,14 @@ char* res_array_to_string(res_array* r) {
         out = new_out;
 
         strcat(out, pval_str);
-        if (i < r->size) {
+        if (i < r->size - 1) {
             strcat(out, " ");
         }
 
         free(pval_str);
     }
 
-    size_t f_len = sizeof(out) + 2;
+    size_t f_len = strlen(out) + 2;
     char* f_out = realloc(out, f_len);
     assert(f_out &&
            "Assertion error in res_array_to_string: memory allocation failure");
