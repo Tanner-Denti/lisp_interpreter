@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "parse.h"
 #include "psi_types.h"
 #include "pval.h"
 #include "res_array.h"
@@ -11,9 +12,10 @@
 pval* evaluate_input(char* input) {
     res_array* pval_list = res_array_new();
 
-    res_array_push(pval_list, new_pval_number(10));
+    pval* err = parse_input(pval_list, input);
 
-    pval* result;
+    // res_array_push(pval_list, new_pval_number(10));
+
 
     // Parse input into pvals and add them into res_array
     // evaluate items in the res_array until we get out result
@@ -46,6 +48,7 @@ int main(int argc, char** argv) {
 
             // Evaluate
             pval* output = evaluate_input(input);
+            // Check if output is an error
 
             // Print
 

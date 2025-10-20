@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,4 +34,15 @@ char* allocate_str_formatted_string(char* s, char* inner) {
     snprintf(out, len, s, inner);
 
     return out;
+}
+
+bool string_to_number(char* str, int64_t* res) {
+    char* endptr;
+    long long num = strtoll(str, &endptr, 10);
+    if (endptr == str) {
+        return false;
+    }
+
+    *res = (int64_t)num;
+    return true;
 }
