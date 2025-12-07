@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "eval.h"
 #include "parse.h"
 #include "psi_types.h"
 #include "pval.h"
@@ -14,31 +15,37 @@ pval* evaluate_input(char* input) {
 
     pval* err = parse_input(pval_list, input);
 
-    // res_array_push(pval_list, new_pval_number(10));
+    if (err != NULL) {
+        res_array_delete(pval_list);
+        return err;
+    }
 
+    int num_exprs = res_array_length(pval_list);
 
-    // Parse input into pvals and add them into res_array
-    // evaluate items in the res_array until we get out result
-    // return the result
+    if (num_exprs == 0) {
+        res_array_delete(pval_list);
+        return new_pval_error(new_pval_string(input), INCOMPLETE_PARSE);
+    }
+
+    pval* expr = res_array_get(pval_list, 0);
+    pval* result = eval(expr);
+
+    res_array_delete(pval_list);
+
+    return result;
 }
 
 int main(int argc, char** argv) {
-    // REPL
     if (argc == 1) {
-        // print "psi>" leaving room for input on the right
-        // When the user presses enter, parse and evaluate the input
-        // print the output
-        // start over
         char input[MAX_INPUT_LENGTH];
 
-        bool quit = false;
-        while (!quit) {
-            // Read
+        while (true) {
             printf("psi> ");
+            fflush(stdout);
 
             if (fgets(input, MAX_INPUT_LENGTH, stdin) == NULL) {
                 printf("\n");
-                continue;
+                break;
             }
 
             size_t len = strlen(input);
@@ -46,13 +53,22 @@ int main(int argc, char** argv) {
                 input[len - 1] = '\0';
             }
 
-            // Evaluate
+            clearerr(stdin);
+
+            if (strlen(input) == 0) {
+                continue;
+            }
+
             pval* output = evaluate_input(input);
-            // Check if output is an error
 
-            // Print
+            if (output == NULL) {
+                continue;
+            }
 
-            // Check if output is the quit builtin
+            char* output_str = pval_to_string(output);
+            printf("%s\n", output_str);
+            fflush(stdout);
+            free(output_str);
 
             pval_delete(output);
         }
@@ -60,5 +76,5 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    // File handling
+    return 0;
 }

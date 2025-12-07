@@ -13,5 +13,6 @@ void res_array_set(res_array* r, int idx, pval* val);
 void res_array_push(res_array* r, pval* elem);
 pval* res_array_pop(res_array* r);
 char* res_array_to_string(res_array* r);
+int res_array_length(res_array* r);
 
 #endif

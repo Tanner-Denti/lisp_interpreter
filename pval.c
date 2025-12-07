@@ -91,7 +91,7 @@ char* pval_to_string(pval* val) {
             res = new_res;
             break;
         case FUNCTION:
-            if (val->value.function->type == BUILTIN) {
+            if (val->value.function && val->value.function->type == BUILTIN) {
                 // Keep an eye on this... I wonder if builtin needs to be a ptr
                 // to a function...
                 res = allocate_string(
@@ -294,4 +294,118 @@ pval* new_pval_function() {
            "Assertion error in new_pval_function: memory allocation failure");
 
     return out;
+}
+
+pval* pval_copy(pval* val) {
+    if (!val)
+        return NULL;
+
+    switch (val->type) {
+        case NUMBER:
+            return new_pval_number(val->value.number);
+        case BOOLEAN:
+            return new_pval_boolean(val->value.boolean);
+        case STRING:
+            return new_pval_string(val->value.string);
+        case SYMBOL:
+            return new_pval_symbol(val->value.symbol);
+        case LIST: {
+            res_array* new_list = res_array_new();
+            res_array* old_list = val->value.list;
+            int len = res_array_length(old_list);
+            for (int i = 0; i < len; i++) {
+                res_array_push(new_list, pval_copy(res_array_get(old_list, i)));
+            }
+            return new_pval_list(new_list);
+        }
+        case CELL:
+            return new_pval_cell(pval_copy(val->value.cell));
+        case ERROR:
+            return new_pval_error(pval_copy(val->value.error->cause),
+                                  val->value.error->type);
+        // TODO
+        case FUNCTION:
+            return NULL;
+    }
+
+    return NULL;
+}
+
+bool pval_equals(pval* a, pval* b) {
+    if (!a || !b)
+        return false;
+
+    if (a->type != b->type)
+        return false;
+
+    switch (a->type) {
+        case NUMBER:
+            return a->value.number == b->value.number;
+        case BOOLEAN:
+            return a->value.boolean == b->value.boolean;
+        case STRING:
+            return strcmp(a->value.string, b->value.string) == 0;
+        case SYMBOL:
+            return strcmp(a->value.symbol, b->value.symbol) == 0;
+        case LIST: {
+            res_array* list_a = a->value.list;
+            res_array* list_b = b->value.list;
+            int len_a = res_array_length(list_a);
+            int len_b = res_array_length(list_b);
+
+            if (len_a != len_b)
+                return false;
+
+            for (int i = 0; i < len_a; i++) {
+                if (!pval_equals(res_array_get(list_a, i),
+                                 res_array_get(list_b, i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        case CELL:
+            return a->value.cell == b->value.cell;
+        case ERROR:
+            return pval_equals(a->value.error->cause, b->value.error->cause);
+        case FUNCTION:
+            return a == b;
+    }
+
+    return false;
+}
+
+PVAL_TYPE get_pval_type(pval* v) {
+    assert(v && "get_pval_type: pval cannot be null");
+    return v->type;
+}
+
+int64_t get_pval_number(pval* v) {
+    assert(v && "get_pval_number: pval cannot be null");
+    assert(v->type == NUMBER && "get_pval_number: pval must be a number");
+    return v->value.number;
+}
+
+bool get_pval_boolean(pval* v) {
+    assert(v && "get_pval_boolean: pval cannot be null");
+    assert(v->type == BOOLEAN && "get_pval_boolean: pval must be a boolean");
+    return v->value.boolean;
+}
+
+char* get_pval_symbol(pval* v) {
+    assert(v && "get_pval_symbol: pval cannot be null");
+    assert(v->type == SYMBOL && "get_pval_symbol: pval must be a symbol");
+    return v->value.symbol;
+}
+
+char* get_pval_string(pval* v) {
+    assert(v && "get_pval_string: pval cannot be null");
+    assert(v->type == STRING && "get_pval_string: pval must be a string");
+    return v->value.string;
+}
+
+res_array* get_pval_list(pval* v) {
+    assert(v && "get_pval_list: pval cannot be null");
+    assert(v->type == LIST && "get_pval_list: pval must be a list");
+    return v->value.list;
 }

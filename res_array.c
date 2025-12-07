@@ -133,3 +133,9 @@ char* res_array_to_string(res_array* r) {
 
     return out;
 }
+
+int res_array_length(res_array* r) {
+    assert(r &&
+           "Assertion error in res_array_length: cannot access NULL res_array");
+    return r->size;
+}
